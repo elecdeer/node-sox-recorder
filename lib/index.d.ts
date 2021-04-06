@@ -90,11 +90,8 @@ export declare class SoXRecorder extends EventEmitter{
         encoding: string;
         env: NodeJS.ProcessEnv;
     };
-
     start(): this;
-
     stop(): this;
-
     stream(): Readable | null;
 }
 export {};
