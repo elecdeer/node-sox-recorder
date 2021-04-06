@@ -1,3 +1,3 @@
 # node-sox-recorder
 
-SoXを用いたNode.JS用オーディオレコーダ
+SoXを用いたNode.js用オーディオレコーダ
