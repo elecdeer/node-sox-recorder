@@ -2,4 +2,4 @@
 
 SoXを用いたNode.js用オーディオレコーダ
 
-[node-audiorecorder](https://github.com/RedKenrok/node-audiorecorder)をベースに作成
+[node-audiorecorder](https://github.com/RedKenrok/node-audiorecorder)を参考に作成
