@@ -153,7 +153,7 @@ export class SoXRecorder extends EventEmitter{
 		const env = process.env;
 
 		if(this.options.device){
-			env.AUDIOENV = this.options.device;
+			env.AUDIODEV = this.options.device;
 		}
 		if(this.options.driver){
 			env.AUDIODRIVER = this.options.driver;
