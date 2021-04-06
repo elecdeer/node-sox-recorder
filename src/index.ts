@@ -1,7 +1,7 @@
 import {ChildProcess, spawn} from "child_process";
-import EventEmitter from "node:events";
 import {opus} from "prism-media";
 import {Readable} from "stream";
+import {EventEmitter} from "events";
 import Encoder = opus.Encoder;
 
 
