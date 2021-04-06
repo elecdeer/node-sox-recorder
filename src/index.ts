@@ -57,7 +57,22 @@ type Option = {
 	 * 出力streamをopusエンコードするかどうか
 	 */
 	opusEncode: boolean,
+
+	silence: {
+		keepSilence: boolean,
+		above: SilenceSubOption,
+		below?: SilenceSubOption
+	} | null;
 }
+
+type SilenceSubOption = {
+	times: number,
+	durationSec: Duration,
+	threshold: Threshold,
+}
+
+type Threshold = `${number}%` | `${number}d`;
+type Duration = `${number}t` | `${number}:${number}` | `${number}:${number}:${number}` | number;
 
 export type Encoding = "signed-integer" | "unsigned-integer" | "floating-point" | "a-law" | "u-law" | "mu-law" | "oki-adpcm" | "ms-adpcm" | "gsm-full-rate";
 
@@ -77,7 +92,8 @@ const defaultOption: Option = {
 	endian: Endian.little,
 	outputType: "wav",
 	encoding: "signed-integer",
-	opusEncode: false
+	opusEncode: false,
+	silence: null,
 }
 
 
@@ -105,18 +121,31 @@ class SoXRecorder extends EventEmitter{
 	}
 
 	constructCommandArguments(): string[]{
-		return [
-			"-d",
-			"-q",
-			"-c", this.options.channels.toString(),
-			"-r", this.options.rate.toString(),
-			"-t", this.options.outputType,
-			"-V0",
-			this.options.endian,
-			"-b", this.options.bits.toString(),
-			"-e", this.options.outputType,
-			"-"
-		];
+		const args = [];
+		args.push("-d");
+		args.push("-q");
+		args.push("-c", this.options.channels.toString());
+		args.push("-r", this.options.rate.toString());
+		args.push("-t", this.options.outputType);
+		args.push("-V0");
+		args.push(this.options.endian);
+		args.push("-b", this.options.bits.toString());
+		args.push("-e", this.options.outputType);
+		args.push("-");
+
+		if(this.options.silence){
+			const effectOpt = this.options.silence;
+			args.push("silence");
+			if(effectOpt.keepSilence){
+				args.push("-l");
+			}
+			args.push(effectOpt.above.times.toString(), effectOpt.above.durationSec.toString(), effectOpt.above.threshold);
+			if(effectOpt.below){
+				args.push(effectOpt.below.times.toString(), effectOpt.below.durationSec.toString(), effectOpt.below.threshold);
+			}
+		}
+
+		return args;
 	}
 
 	constructCommandOptions(){
