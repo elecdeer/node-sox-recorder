@@ -1,8 +1,8 @@
-import {ChildProcess, spawn, SpawnOptionsWithoutStdio} from "child_process";
+import {ChildProcess, spawn} from "child_process";
 import EventEmitter from "node:events";
 import {opus} from "prism-media";
-import Encoder = opus.Encoder;
 import {Readable} from "stream";
+import Encoder = opus.Encoder;
 
 
 type Option = {
@@ -96,9 +96,7 @@ const defaultOption: Option = {
 	silence: null,
 }
 
-
-
-class SoXRecorder extends EventEmitter{
+export class SoXRecorder extends EventEmitter{
 	childProcess: ChildProcess | undefined;
 	options: Option;
 	opusEncoder: Encoder | undefined
