@@ -59,7 +59,7 @@ type Option = {
 	opusEncode: boolean,
 
 	silence: {
-		keepSilence: boolean,
+		keepSilence?: boolean,
 		above: SilenceSubOption,
 		below?: SilenceSubOption
 	} | null;
@@ -99,15 +99,17 @@ const defaultOption: Option = {
 export class SoXRecorder extends EventEmitter{
 	childProcess: ChildProcess | undefined;
 	options: Option;
-	opusEncoder: Encoder | undefined
+	opusEncoder: Encoder | undefined;
+	logger?: Console;
 
-	constructor(options: Partial<Option>){
+	constructor(options: Partial<Option>, logger?: Console){
 		super();
 
 		this.options = {
 			...defaultOption,
 			...options
 		}
+		this.logger = logger;
 
 		if(this.options.opusEncode){
 			this.opusEncoder = new Encoder({
@@ -128,7 +130,7 @@ export class SoXRecorder extends EventEmitter{
 		args.push("-V0");
 		args.push(this.options.endian);
 		args.push("-b", this.options.bits.toString());
-		args.push("-e", this.options.outputType);
+		args.push("-e", this.options.encoding);
 		args.push("-");
 
 		if(this.options.silence){
@@ -159,27 +161,45 @@ export class SoXRecorder extends EventEmitter{
 
 		return {
 			encoding: "binary",
-			env: process.env,
+			env: env,
 		}
 	}
 
-	start(): this {
+	start(): this{
 		if(this.childProcess){
 			this.childProcess.kill();
 		}
 
 		const args = this.constructCommandArguments();
 		const opts = this.constructCommandOptions();
+
+		if(this.logger){
+			this.logger.log(`args: ${args.join(" ")}`);
+			this.logger.log(`opts: ${JSON.stringify(opts)}`);
+		}
+
 		this.childProcess = spawn("sox", args, opts);
 
 		this.childProcess.on("close", code => {
 			this.emit("close", code);
+
+			if(this.logger){
+				this.logger.log(`node-sox-recorder: Exit ${code}`);
+			}
 		})
+
+		if(this.options.opusEncode && this.opusEncoder){
+			this.childProcess.stdout?.pipe(this.opusEncoder);
+		}
+
+		if(this.logger){
+			this.logger.log(`node-sox-recorder: started recording`);
+		}
 
 		return this;
 	}
 
-	stop(): this {
+	stop(): this{
 		if(!this.childProcess){
 			return this;
 		}
@@ -187,17 +207,22 @@ export class SoXRecorder extends EventEmitter{
 		this.childProcess.kill();
 		this.childProcess = undefined;
 
+		if(this.logger){
+			this.logger.log(`node-sox-recorder: stopped recording`);
+		}
+
 		return this;
 	}
 
-	stream(): Readable | null {
+	stream(): Readable | null{
 		if(!this.childProcess || !this.childProcess.stdout){
 			return null;
 		}
 		if(!this.opusEncoder){
 			return this.childProcess.stdout;
 		}
-		return this.childProcess.stdout.pipe(this.opusEncoder);
+		return this.opusEncoder;
 	}
 
 }
+
