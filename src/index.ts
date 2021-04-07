@@ -71,7 +71,7 @@ type SilenceSubOption = {
 	threshold: Threshold,
 }
 
-type Threshold = `${number}%` | `${number}d`;
+type Threshold = `${number}%` | `${number}d` | number;
 type Duration = `${number}t` | `${number}:${number}` | `${number}:${number}:${number}` | number;
 
 export type Encoding = "signed-integer" | "unsigned-integer" | "floating-point" | "a-law" | "u-law" | "mu-law" | "oki-adpcm" | "ms-adpcm" | "gsm-full-rate";
@@ -115,7 +115,7 @@ export class SoXRecorder extends EventEmitter{
 			this.opusEncoder = new Encoder({
 				channels: this.options.channels,
 				rate: this.options.rate,
-				frameSize: 960
+				frameSize: this.options.rate / 50,
 			});
 		}
 	}
@@ -139,11 +139,13 @@ export class SoXRecorder extends EventEmitter{
 			if(effectOpt.keepSilence){
 				args.push("-l");
 			}
-			args.push(effectOpt.above.times.toString(), effectOpt.above.durationSec.toString(), effectOpt.above.threshold);
+			args.push(effectOpt.above.times.toString(), effectOpt.above.durationSec.toString(), effectOpt.above.threshold.toString());
 			if(effectOpt.below){
-				args.push(effectOpt.below.times.toString(), effectOpt.below.durationSec.toString(), effectOpt.below.threshold);
+				args.push(effectOpt.below.times.toString(), effectOpt.below.durationSec.toString(), effectOpt.below.threshold.toString());
 			}
 		}
+
+		// args.push("trim", "00:01");
 
 		return args;
 	}

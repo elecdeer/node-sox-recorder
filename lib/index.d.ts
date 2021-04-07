@@ -57,7 +57,7 @@ declare type SilenceSubOption = {
     durationSec: Duration;
     threshold: Threshold;
 };
-declare type Threshold = `${number}%` | `${number}d`;
+declare type Threshold = `${number}%` | `${number}d` | number;
 declare type Duration = `${number}t` | `${number}:${number}` | `${number}:${number}:${number}` | number;
 export declare type Encoding =
   "signed-integer"
